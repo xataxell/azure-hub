@@ -1,0 +1,56 @@
+--// Services
+local Players = cloneref(game:GetService('Players'))
+local ReplicatedStorage = cloneref(game:GetService('ReplicatedStorage'))
+local RunService = cloneref(game:GetService('RunService'))
+local GuiService = cloneref(game:GetService('GuiService'))
+
+--// Variables
+local flags = {}
+local lp = Players.LocalPlayer
+local Locations = {
+    ['LightGame'] = CFrame.new(118.392952, 3.92336559, 738.384216, -0.999816239, 2.97948652e-08, 0.019171482, 3.05902006e-08, 1, 4.11922052e-08, -0.019171482, 4.1771095e-08, -0.999816239)
+}
+
+--// Functions
+FindChildOfClass = function(parent, classname)
+    return parent:FindFirstChildOfClass(classname)
+end
+FindChild = function(parent, child)
+    return parent:FindFirstChild(child)
+end
+FindChildOfType = function(parent, childname, classname)
+    child = parent:FindFirstChild(childname)
+    if child and child.ClassName == classname then
+        return child
+    end
+end
+CheckFunc = function(func)
+    return typeof(func) == 'function'
+end
+
+--// Custom Functions
+getchar = function()
+    return lp.Character or lp.CharacterAdded:Wait()
+end
+gethrp = function()
+    return getchar():WaitForChild('HumanoidRootPart')
+end
+gethum = function()
+    return getchar():WaitForChild('Humanoid')
+end
+
+--// UI
+local library
+if CheckFunc(makefolder) and (CheckFunc(isfolder) and not isfolder('Azure Hub')) then
+    makefolder('Azure Hub')
+end
+if CheckFunc(writefile) and (CheckFunc(isfile) and not isfile('Azure Hub/library.lua')) then
+    writefile('Azure Hub/library.lua', game:HttpGet('https://github.com/xataxell/azure-hub/blob/main/library.lua?raw=true'))
+end
+if CheckFunc(loadfile) then
+    library = loadfile('Azure Hub/library.lua')()
+else
+    library = loadstring(game:HttpGet('https://github.com/xataxell/azure-hub/blob/main/library.lua?raw=true'))()
+end
+local LightGame = library:CreateWindow('Light Game')
+LightGame:Button('Teleport To Finish', function() gethrp().CFrame = Locations['LightGame'] end)
