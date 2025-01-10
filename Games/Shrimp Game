@@ -1,14 +1,14 @@
 --// Services
-local Players = cloneref(game:GetService('Players'))
+local Players           = cloneref(game:GetService('Players'))
 local ReplicatedStorage = cloneref(game:GetService('ReplicatedStorage'))
-local RunService = cloneref(game:GetService('RunService'))
-local GuiService = cloneref(game:GetService('GuiService'))
+local RunService        = cloneref(game:GetService('RunService'))
+local GuiService        = cloneref(game:GetService('GuiService'))
 
 --// Variables
-local flags = {}
-local lp = Players.LocalPlayer
+local flags     = {}
+local lp        = Players.LocalPlayer
 local Locations = {
-    ['LightGame'] = CFrame.new(118.392952, 3.92336559, 738.384216, -0.999816239, 2.97948652e-08, 0.019171482, 3.05902006e-08, 1, 4.11922052e-08, -0.019171482, 4.1771095e-08, -0.999816239)
+    ['LightGame'] = CFrame.new(156.494583, 3.50012469, 709.877563, -0.999958873, -2.64355471e-08, 0.00907192379, -2.72906195e-08, 1, -9.41310816e-08, -0.00907192379, -9.43747906e-08, -0.999958873)
 }
 
 --// Functions
