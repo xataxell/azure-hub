@@ -346,9 +346,16 @@ RunService.Heartbeat:Connect(function()
     if flags['nopeakssystems'] then
         getchar():SetAttribute('WinterCloakEquipped', true)
         getchar():SetAttribute('Refill', true)
+		if not getchar():GetAttribute('OxygenTankEquipped') then
+			getchar():SetAttribute('OxygenUnits', 1/0)
+		end
     else
         getchar():SetAttribute('WinterCloakEquipped', nil)
         getchar():SetAttribute('Refill', false)
+		if not getchar():GetAttribute('OxygenTankEquipped') then
+			getchar():SetAttribute('OxygenUnits', 100)
+			getchar():SetAttribute('OxygenUnits', nil)
+		end
     end
 end)
 
