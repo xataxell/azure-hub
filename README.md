@@ -6,3 +6,4 @@ loadstring(game:HttpGet('https://github.com/xataxell/azure-hub/blob/main/loader.
 ## Supported Games
 - [Fisch](https://www.roblox.com/games/16732694052/Fisch)
 - [Shrimp Game](https://www.roblox.com/games/7606564092/MINGLE-Shrimp-Game)
+- [Blades & Buffoonery](https://www.roblox.com/games/117701570624742/Blades-Buffoonery)
