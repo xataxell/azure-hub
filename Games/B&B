@@ -1,6 +1,3 @@
--- Box farm kicks you because of the shitty anticheat, script has been rushed and this will be fixed in the next update
-
-
 --// Services
 local Players           = cloneref(game:GetService('Players'))
 local ReplicatedStorage = cloneref(game:GetService('ReplicatedStorage'))
@@ -13,8 +10,11 @@ local flags       = {
     ['CurrentBox'] = nil
 }
 local lp          = Players.LocalPlayer
+local openbox     = ReplicatedStorage.RemoteEvents.BoxEvent
+local boxes       = workspace.BoxPositions
 local killauracon = nil
 local boxfarmcon  = nil
+local boxauracon  = nil
 
 --// Functions
 FindChildOfClass = function(parent, classname)
@@ -72,36 +72,60 @@ setupkillaura = function()
         end
     end)
 end
+setupboxaura = function()
+    if boxauracon then boxauracon:Disconnect() end
+    boxauracon = RunService.Heartbeat:Connect(function()
+        if flags['boxaura'] then
+            for i,v in boxes:GetDescendants() do
+                if (v.Name == 'Common' or v.Name == 'Uncommon' or v.Name == 'Rare' or v.Name == 'Epic' or v.Name == 'Legendary') and v:IsA('Model') then
+                    if not (lp.Character and FindChild(lp.Character, 'HumanoidRootPart')) then return end
+                    local particlePart = FindChild(v, 'ParticlePart')
+                    if not particlePart then return end
+
+                    local distance = (particlePart.CFrame.Position - lp.Character.HumanoidRootPart.Position).Magnitude
+                    if distance <= 10 then
+                        openbox:FireServer(v)
+                    end
+                end
+            end
+        end
+    end)
+end
 setupboxfarm = function()
-    local openbox = ReplicatedStorage.RemoteEvents.BoxEvent
-    local boxes = workspace.BoxPositions
     if boxfarmcon then boxfarmcon:Disconnect() end
     boxfarmcon = RunService.Heartbeat:Connect(function()
         if flags['boxautofarm'] and lp.Character and FindChild(getchar(), 'HumanoidRootPart') then
             for i,v in boxes:GetDescendants() do
-                if (v.Name == 'Common' or v.Name == 'Uncommon' or v.Name == 'Rare' or v.Name == 'Epic' or v.Name == 'Legendary') and v:IsA('Model') and FindChild(v, 'ParticlePart') and not flags['currentBox'] then
-                    local distance = (FindChild(v, 'ParticlePart').CFrame.Position - lp.Character.HumanoidRootPart.Position).Magnitude
-                    workspace.Gravity = 0
+                if (v.Name == 'Common' or v.Name == 'Uncommon' or v.Name == 'Rare' or v.Name == 'Epic' or v.Name == 'Legendary' or v.Name == 'Mythical') and v:IsA('Model') and flags['boxautofarm'] and v == flags['currentBox'] or ((v.Name == 'Mythical' or v.Name == 'Legendary' or (v.Name == 'Epic' and not flags['currentBox']) or (v.Name == 'Rare' and not flags['currentBox']) or (v.Name == 'Uncommon' and not flags['currentBox']) or (v.Name == 'Common' and not flags['currentBox']))) then
+                    if not (lp.Character and FindChild(lp.Character, 'HumanoidRootPart')) then return end
+                    local particlePart = FindChild(v, 'ParticlePart')
+                    if not particlePart then return end
+
+                    local distance = (particlePart.CFrame.Position - lp.Character.HumanoidRootPart.Position).Magnitude
+                    local distancefromspawn = (Vector3.new(-120.23885345458984, -85.00001525878906, -640.92919921875) - lp.Character.HumanoidRootPart.Position).Magnitude
                     flags['currentBox'] = v
-                    
                     if distance <= 10 then
                         openbox:FireServer(v)
-                        workspace.Gravity = 0
                         flags['currentBox'] = nil
-                    elseif distance > 10 and v and FindChild(v, 'ParticlePart') then
-                        time = distance / 90
+                    elseif distance > 10 and v and particlePart and particlePart.Position.Y > -82 and (distancefromspawn <= 350 or distance < 1000) then
+                        time = distance / 150
                         workspace.Gravity = 0
                         noclip(false)
-                        TweenService:Create(lp.Character.HumanoidRootPart, TweenInfo.new(time, Enum.EasingStyle.Linear), {CFrame = FindChild(v, 'ParticlePart').CFrame}):Play()
+                        local tween = TweenService:Create(lp.Character.HumanoidRootPart, TweenInfo.new(time, Enum.EasingStyle.Linear), {CFrame = particlePart.CFrame})
+                        tween:Play()
                         
                         task.delay(time, function() 
-                            if v and FindChild(v, 'ParticlePart') then
+                            if not (lp.Character and FindChild(lp.Character, 'HumanoidRootPart')) then
+                                tween:Cancel()
                                 workspace.Gravity = 196.2
-                                local distance2 = (FindChild(v, 'ParticlePart').CFrame.Position - lp.Character.HumanoidRootPart.Position).Magnitude
-                                if distance2 <= 10 then
-                                    openbox:FireServer(v)
-                                    flags['currentBox'] = nil
-                                end
+                                flags['currentBox'] = nil
+                                return
+                            end
+                            workspace.Gravity = 196.2
+                            local distance2 = (particlePart.CFrame.Position - lp.Character.HumanoidRootPart.Position).Magnitude
+                            if distance2 <= 10 then
+                                openbox:FireServer(v)
+                                flags['currentBox'] = nil
                             end
                         end)
                     end
@@ -133,9 +157,20 @@ Combat:Toggle('Hit Aura', {location = flags, flag = 'hitaura'}, function()
 end)
 Autofarm:Toggle('Box Farm', {location = flags, flag = 'boxautofarm'}, function()
     if boxfarmcon then boxfarmcon:Disconnect() end
-    workspace.Gravity = 196.2
     flags['currentBox'] = nil
     noclip(true)
     setupboxfarm()
-    lp.CharacterAdded:Connect(function() flags['currentBox'] = nil; noclip(true) if boxfarmcon then boxfarmcon:Disconnect() end task.delay(1, function() setupboxfarm() end) end)
+    lp.CharacterAdded:Connect(function() 
+        flags['currentBox'] = nil
+        noclip(true)
+        if boxfarmcon then boxfarmcon:Disconnect() end
+        task.delay(1, function()
+            setupboxfarm()
+        end)
+    end)
+end)
+Autofarm:Toggle('Box Aura', {location = flags, flag = 'boxaura'}, function()
+    if boxauracon then boxauracon:Disconnect() end
+    setupboxaura()
+    lp.CharacterAdded:Connect(function() if boxauracon then boxauracon:Disconnect() end task.delay(1, function() setupboxaura() end) end)
 end)
