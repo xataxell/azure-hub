@@ -9,6 +9,7 @@ local flags = {}
 local characterposition
 local lp = Players.LocalPlayer
 local fishabundancevisible = false
+local dailyreward = ReplicatedStorage.packages.Net["RE/DailyReward/Claim"]
 local deathcon
 local tooltipmessage
 local TeleportLocations = {
@@ -122,6 +123,7 @@ end
 Modifications:Section('Client')
 Modifications:Toggle('Infinite Oxygen', {location = flags, flag = 'infoxygen'})
 Modifications:Toggle('No Temp & Oxygen', {location = flags, flag = 'nopeakssystems'})
+Modifications:Toggle('Claim Money Reward', {location = flags, flag = 'receivemoney'})
 -----
 Teleports:Section('Locations')
 Teleports:Dropdown('Zones', {location = flags, flag = 'zones', list = ZoneNames})
@@ -352,10 +354,13 @@ RunService.Heartbeat:Connect(function()
     else
         getchar():SetAttribute('WinterCloakEquipped', nil)
         getchar():SetAttribute('Refill', false)
-		if not getchar():GetAttribute('OxygenTankEquipped') then
+		if getchar():GetAttribute('OxygenUnits') and not getchar():GetAttribute('OxygenTankEquipped') then
 			getchar():SetAttribute('OxygenUnits', 100)
 			getchar():SetAttribute('OxygenUnits', nil)
 		end
+    end
+    if flags['receivemoney'] then
+        dailyreward:FireServer()
     end
 end)
 
