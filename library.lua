@@ -270,7 +270,7 @@ do
             local min      = options.min or 0;
             local max      = options.max or 9e9;
 
-            if type == 'number' and (not tonumber(default)) then
+            if type == 'number' and tonumber(default) then
                 location[flag] = default;
             else
                 location[flag] = "";
