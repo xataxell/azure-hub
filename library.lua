@@ -227,38 +227,63 @@ do
             }
         end
         
-        function types:Button(name, callback)
-            callback = callback or function() end;
-            
-            local check = library:Create('Frame', {
-                BackgroundTransparency = 1;
-                Size = UDim2.new(1, 0, 0, 25);
-                LayoutOrder = self:GetOrder();
-                library:Create('TextButton', {
-                    Name = name;
-                    Text = name;
-                    BackgroundColor3 = library.options.btncolor;
-                    BorderColor3 = library.options.bordercolor;
-                    TextStrokeTransparency = library.options.textstroke;
-                    TextStrokeColor3 = library.options.strokecolor;
-                    TextColor3 = library.options.textcolor;
-                    Position = UDim2.new(0, 5, 0, 5);
-                    Size     = UDim2.new(1, -10, 0, 20);
-                    Font = library.options.font;
-                    TextSize = library.options.fontsize;
-                });
-                Parent = self.container;
-            });
-            
-            check:FindFirstChild(name).MouseButton1Click:connect(callback)
-            self:Resize();
-
-            return {
-                Fire = function()
-                    callback();
-                end
-            }
-        end
+        function types:Button(name, callback, confirmation, confirmtext)
+	    callback = callback or function() end;
+	    
+	    local check = library:Create('Frame', {
+	        BackgroundTransparency = 1;
+	        Size = UDim2.new(1, 0, 0, 25);
+	        LayoutOrder = self:GetOrder();
+	        library:Create('TextButton', {
+	            Name = name;
+	            Text = name;
+	            BackgroundColor3 = library.options.btncolor;
+	            BorderColor3 = library.options.bordercolor;
+	            TextStrokeTransparency = library.options.textstroke;
+	            TextStrokeColor3 = library.options.strokecolor;
+	            TextColor3 = library.options.textcolor;
+	            Position = UDim2.new(0, 5, 0, 5);
+	            Size     = UDim2.new(1, -10, 0, 20);
+	            Font = library.options.font;
+	            TextSize = library.options.fontsize;
+	        });
+	        Parent = self.container;
+	    });
+	
+	    check:FindFirstChild(name):Set = function(newtext)
+	        check:FindFirstChild(name).Text = newtext
+	        self:Resize();
+	    end
+	    
+	    if not confirmation then
+	        check:FindFirstChild(name).MouseButton1Click:connect(callback)
+	    else
+	        check:FindFirstChild(name).MouseButton1Click:connect(function()
+	            if check:FindFirstChild(name).Text == 'Confirm?' or check:FindFirstChild(name).Text == 'Confirm? ' .. confirmtext then
+	                callback()
+	                check:FindFirstChild(name):Set(name)
+	            end
+	                if confirmtext then
+	                    check:FindFirstChild(name):Set('Confirm? ' .. confirmtext)
+	                else
+	                    check:FindFirstChild(name):Set('Confirm?')
+	                end
+	                task.delay(4, function()
+	                    if check:FindFirstChild(name).Text == 'Confirm?' or check:FindFirstChild(name).Text == 'Confirm? ' .. confirmtext then
+	                        check:FindFirstChild(name):Set(name)
+	                    end
+	                end)
+	            end
+	        end)
+	    end
+	    self:Resize();
+	
+	    return {
+	        Fire = function()
+	            callback();
+	        end
+	    }
+	end
         
         function types:Box(name, options, callback) --type, default, data, location, flag)
             local type   = options.type or "";
