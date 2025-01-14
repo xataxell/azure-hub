@@ -270,7 +270,7 @@ do
             local min      = options.min or 0;
             local max      = options.max or 9e9;
 
-            if type == 'number' and tonumber(default) then
+            if type == 'number' then
                 location[flag] = default;
             else
                 location[flag] = "";
@@ -482,6 +482,37 @@ do
                     TextStrokeColor3 = library.options.strokecolor;
                 });
                 Parent = self.container;
+            });
+        
+            self:Resize();
+        end
+
+	function types:Label(name)
+            local order = self:GetOrder();
+            local determinedSize = UDim2.new(1, 0, 0, 25)
+            local determinedPos = UDim2.new(0, 0, 0, 4);
+            local secondarySize = UDim2.new(1, 0, 0, 20);
+                        
+            if order == 0 then
+                determinedSize = UDim2.new(1, 0, 0, 21)
+                determinedPos = UDim2.new(0, 0, 0, -1);
+                secondarySize = nil
+            end
+            
+            library:Create('TextLabel', {
+                Name = 'text_lbl';
+                Text = name;
+                BackgroundTransparency = 0;
+                BorderSizePixel = 0;
+                BackgroundColor3 = library.options.sectncolor;
+                TextColor3 = library.options.textcolor;
+                Position = determinedPos;
+                Size     = (secondarySize or UDim2.new(1, 0, 1, 0));
+                Font = library.options.font;
+                TextSize = library.options.fontsize;
+                TextStrokeTransparency = library.options.textstroke;
+                TextStrokeColor3 = library.options.strokecolor;
+		Parent = self.container;
             });
         
             self:Resize();
