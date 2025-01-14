@@ -10,6 +10,8 @@ local characterposition
 local lp = Players.LocalPlayer
 local fishabundancevisible = false
 local dailyreward = ReplicatedStorage.packages.Net["RE/DailyReward/Claim"]
+local purchase = ReplicatedStorage.events.purchase
+local itemenv = require(ReplicatedStorage.modules.library.items)
 local deathcon
 local tooltipmessage
 local TeleportLocations = {
@@ -32,7 +34,9 @@ local TeleportLocations = {
         ['Frigid Cavern'] = CFrame.new(20253.6094, 756.525818, 5772.68555, -0.781508088, 1.85673343e-08, 0.623895109, 5.92671467e-09, 1, -2.23363816e-08, -0.623895109, -1.3758414e-08, -0.781508088),
         ['Cryogenic Canal'] = CFrame.new(19958.5176, 917.195923, 5332.59375, 0.758922458, -7.29783434e-09, 0.651180983, -4.58880756e-09, 1, 1.65551253e-08, -0.651180983, -1.55522013e-08, 0.758922458),
         ['Glacial Grotto'] = CFrame.new(20003.0273, 1136.42798, 5555.95996, 0.983130038, -3.94455064e-08, 0.182907909, 3.45229765e-08, 1, 3.0096718e-08, -0.182907909, -2.32744615e-08, 0.983130038),
-        ["Keeper's Altar"] = CFrame.new(1297.92285, -805.292236, -284.155823, -0.99758029, 5.80044706e-08, -0.0695239156, 6.16549869e-08, 1, -5.03615105e-08, 0.0695239156, -5.45261436e-08, -0.99758029)
+        ["Keeper's Altar"] = CFrame.new(1297.92285, -805.292236, -284.155823, -0.99758029, 5.80044706e-08, -0.0695239156, 6.16549869e-08, 1, -5.03615105e-08, 0.0695239156, -5.45261436e-08, -0.99758029),
+        ['Desolate Brine Pool'] = CFrame.new(-1794.15234, -142.692932, -3388.45288, 0.999977708, 4.95934422e-08, 0.00667741802, -4.97150729e-08, 1, 1.80494908e-08, -0.00667741802, -1.83810567e-08, 0.999977708),
+        ['Desolate Deep'] = CFrame.new(-1657.3811, -214.182236, -2846.83838, 0.972146213, 8.15457639e-08, 0.234375179, -8.66272103e-08, 1, 1.13857901e-08, -0.234375179, -3.13719184e-08, 0.972146213)
     },
     ['Rods'] = {
         ['Heaven Rod'] = CFrame.new(20025.0508, -467.665955, 7114.40234, -0.9998191, -2.41349773e-10, 0.0190212391, -4.76249762e-10, 1, -1.23448247e-08, -0.0190212391, -1.23516495e-08, -0.9998191),
@@ -40,12 +44,25 @@ local TeleportLocations = {
         ['Kings Rod'] = CFrame.new(1380.83862, -807.198608, -304.22229, -0.692510426, 9.24755454e-08, 0.72140789, 4.86611427e-08, 1, -8.1475676e-08, -0.72140789, -2.13182219e-08, -0.692510426)
     }
 }
+local PurchaseableItems = {
+    ['Equipment'] = {
+        ['Items'] = {}
+    }
+}
 local ZoneNames = {}
 local RodNames = {}
+local EquipmentNames = {}
 local RodColors = {}
 local RodMaterials = {}
 for i,v in pairs(TeleportLocations['Zones']) do table.insert(ZoneNames, i) end
 for i,v in pairs(TeleportLocations['Rods']) do table.insert(RodNames, i) end
+for i,v in pairs(itemenv['Items']) do
+    if typeof(v) == 'table' and (v.Price ~= 1/0 and v.Price ~= math.huge) and (not v.DEV or v.DEV ~= true) and (not v.Unpurchasable or v.Unpurchasable ~= true) then
+        PurchaseableItems['Equipment']['Items'][i] = {Price = v.Price}
+    end
+end
+for i,v in pairs(PurchaseableItems['Equipment']['Items']) do table.insert(EquipmentNames, i) end
+
 
 --// Functions
 FindChildOfClass = function(parent, classname)
@@ -92,21 +109,22 @@ end
 
 --// UI
 local library
-if CheckFunc(makefolder) and (CheckFunc(isfolder) and not isfolder('fisch')) then
-    makefolder('fisch')
+if CheckFunc(makefolder) and (CheckFunc(isfolder) and not isfolder('Azure Hub')) then
+    makefolder('Azure Hub')
 end
-if CheckFunc(writefile) and (CheckFunc(isfile) and not isfile('fisch/library.lua')) then
-    writefile('fisch/library.lua', game:HttpGet('https://raw.githubusercontent.com/xataxell/fisch/refs/heads/main/library.lua'))
+if CheckFunc(writefile) and (CheckFunc(isfile) and not isfile('Azure Hub/library.lua')) then
+    writefile('Azure Hub/library.lua', game:HttpGet('https://github.com/xataxell/azure-hub/blob/main/library.lua?raw=true'))
 end
 if CheckFunc(loadfile) then
-    library = loadfile('fisch/library.lua')()
+    library = loadfile('Azure Hub/library.lua')()
 else
-    library = loadstring(game:HttpGet('https://raw.githubusercontent.com/xataxell/fisch/refs/heads/main/library.lua'))()
+    library = loadstring(game:HttpGet('https://github.com/xataxell/azure-hub/blob/main/library.lua?raw=true'))()
 end
 local Automation = library:CreateWindow('Automation')
 local Modifications = library:CreateWindow('Modifications')
 local Teleports = library:CreateWindow('Teleports')
 local Visuals = library:CreateWindow('Visuals')
+local Market = library:CreateWindow('Market')
 Automation:Section('Autofarm')
 Automation:Toggle('Freeze Character', {location = flags, flag = 'freezechar'})
 Automation:Dropdown('Freeze Character Mode', {location = flags, flag = 'freezecharmode', list = {'Rod Equipped', 'Toggled'}})
@@ -123,7 +141,6 @@ end
 Modifications:Section('Client')
 Modifications:Toggle('Infinite Oxygen', {location = flags, flag = 'infoxygen'})
 Modifications:Toggle('No Temp & Oxygen', {location = flags, flag = 'nopeakssystems'})
-Modifications:Toggle('Claim Money Reward', {location = flags, flag = 'receivemoney'})
 -----
 Teleports:Section('Locations')
 Teleports:Dropdown('Zones', {location = flags, flag = 'zones', list = ZoneNames})
@@ -137,6 +154,15 @@ Visuals:Toggle('Rod Chams', {location = flags, flag = 'rodchams'})
 Visuals:Dropdown('Material', {location = flags, flag = 'rodmaterial', list = {'ForceField', 'Neon'}})
 Visuals:Section('Fish Abundance')
 Visuals:Toggle('Free Fish Radar', {location = flags, flag = 'fishabundance'})
+-----
+Market:Section('Equipment')
+Market:Dropdown('Equipment', {location = flags, flag = 'equipmenttobuy', list = EquipmentNames})
+Market:Box('Amount', {type = 'number', default = 111, min = 1, max = 10000, location = flags, flag = 'equipmentamount'})
+Market:Button('Purchase Item', function() purchase:FireServer(flags['equipmenttobuy'], 'item', nil, (flags['equipmentamount'] ~= '' and flags['equipmentamount'] or 1)) end, true, PurchaseableItems['Equipment']['Items'][flags['equipmenttobuy']].Price)
+Market:Section('Money')
+Market:Toggle('Claim Money Reward', {location = flags, flag = 'receivemoney'})
+Market:Slider('Delay', {default = .1, min = 0, max = 2, location = flags, precise = 1, flag = 'moneyamount'})
+Market:Slider('Spam Amount', {default = 1, min = 1, max = 50, location = flags, flag = 'moneyamount'})
 
 --// Loops
 RunService.Heartbeat:Connect(function()
@@ -360,7 +386,18 @@ RunService.Heartbeat:Connect(function()
 		end
     end
     if flags['receivemoney'] then
-        dailyreward:FireServer()
+        if flags['moneyamount'] == 1 then
+            dailyreward:FireServer()
+        else
+            for i=1, flags['moneyamount'] do
+                dailyreward:FireServer()
+            end
+        end
+        for i,v in lp.PlayerGui.hud.safezone.announcements:GetChildren() do
+            if v.Name == 'thought' then
+                v:Destroy()
+            end
+        end
     end
 end)
 
