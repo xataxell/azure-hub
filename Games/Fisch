@@ -161,10 +161,27 @@ Market:Box('Amount', {type = 'number', default = 111, min = 1, max = 10000, loca
 Market:Button('Purchase Item', function() purchase:FireServer(flags['equipmenttobuy'], 'item', nil, (flags['equipmentamount'] ~= '' and flags['equipmentamount'] or 1)) end, true, PurchaseableItems['Equipment']['Items'][flags['equipmenttobuy']].Price)
 Market:Section('Money')
 Market:Toggle('Claim Money Reward', {location = flags, flag = 'receivemoney'})
-Market:Slider('Delay', {default = .1, min = 0, max = 2, location = flags, precise = 1, flag = 'moneyamount'})
-Market:Slider('Spam Amount', {default = 1, min = 1, max = 50, location = flags, flag = 'moneyamount'})
+Market:Slider('Delay', {default = .1, min = .1, max = 2, location = flags, precise = true, flag = 'moneydelay'})
+Market:Slider('Spam Amount', {default = 1, min = 1, max = 5, location = flags, flag = 'moneyamount'})
 
 --// Loops
+while task.wait(flags['moneydelay']) do
+    if flags['receivemoney'] then
+        if flags['moneyamount'] == 1 then
+            dailyreward:FireServer()
+        else
+            for i=1, flags['moneyamount'] do
+                dailyreward:FireServer()
+            end
+        end
+        for i,v in lp.PlayerGui.hud.safezone.announcements:GetChildren() do
+            if v.Name == 'thought' then
+                v:Destroy()
+            end
+        end
+    end
+end
+
 RunService.Heartbeat:Connect(function()
     -- Autofarm
     if flags['freezechar'] then
@@ -384,20 +401,6 @@ RunService.Heartbeat:Connect(function()
 			getchar():SetAttribute('OxygenUnits', 100)
 			getchar():SetAttribute('OxygenUnits', nil)
 		end
-    end
-    if flags['receivemoney'] then
-        if flags['moneyamount'] == 1 then
-            dailyreward:FireServer()
-        else
-            for i=1, flags['moneyamount'] do
-                dailyreward:FireServer()
-            end
-        end
-        for i,v in lp.PlayerGui.hud.safezone.announcements:GetChildren() do
-            if v.Name == 'thought' then
-                v:Destroy()
-            end
-        end
     end
 end)
 
