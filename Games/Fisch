@@ -154,22 +154,24 @@ Market:Slider('Delay', {default = .1, min = .1, max = 2, location = flags, preci
 Market:Slider('Spam Amount', {default = 1, min = 1, max = 5, location = flags, flag = 'moneyamount'})
 
 --// Loops
-while task.wait(flags['moneydelay']) do
-    if flags['receivemoney'] then
-        if flags['moneyamount'] == 1 then
-            dailyreward:FireServer()
-        else
-            for i=1, flags['moneyamount'] do
+task.spawn(function()
+    while task.wait(flags['moneydelay']) do
+        if flags['receivemoney'] then
+            if flags['moneyamount'] == 1 then
                 dailyreward:FireServer()
+            else
+                for i=1, flags['moneyamount'] do
+                    dailyreward:FireServer()
+                end
             end
-        end
-        for i,v in lp.PlayerGui.hud.safezone.announcements:GetChildren() do
-            if v.Name == 'thought' then
-                v:Destroy()
+            for i,v in lp.PlayerGui.hud.safezone.announcements:GetChildren() do
+                if v.Name == 'thought' then
+                    v:Destroy()
+                end
             end
         end
     end
-end
+end)
 
 RunService.Heartbeat:Connect(function()
     -- Autofarm
