@@ -40,17 +40,6 @@ gethum = function()
 end
 
 --// UI
-local library
-if CheckFunc(makefolder) and (CheckFunc(isfolder) and not isfolder('Azure Hub')) then
-    makefolder('Azure Hub')
-end
-if CheckFunc(writefile) and (CheckFunc(isfile) and not isfile('Azure Hub/library.lua')) then
-    writefile('Azure Hub/library.lua', game:HttpGet('https://github.com/xataxell/azure-hub/blob/main/library.lua?raw=true'))
-end
-if CheckFunc(loadfile) then
-    library = loadfile('Azure Hub/library.lua')()
-else
-    library = loadstring(game:HttpGet('https://github.com/xataxell/azure-hub/blob/main/library.lua?raw=true'))()
-end
+local library = loadstring(game:HttpGet('https://github.com/xataxell/azure-hub/blob/main/library.lua?raw=true'))()
 local LightGame = library:CreateWindow('Light Game')
 LightGame:Button('Teleport To Finish', function() gethrp().CFrame = Locations['LightGame'] end)
