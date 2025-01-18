@@ -108,7 +108,18 @@ message = function(text, time)
 end
 
 --// UI
-local library = loadstring(game:HttpGet('https://github.com/xataxell/azure-hub/blob/main/library.lua?raw=true'))()
+local library
+if CheckFunc(makefolder) and (CheckFunc(isfolder) and not isfolder('Azure Hub')) then
+    makefolder('Azure Hub')
+end
+if CheckFunc(writefile) and (CheckFunc(isfile) and not isfile('Azure Hub/library.lua')) then
+    writefile('Azure Hub/library.lua', game:HttpGet('https://github.com/xataxell/azure-hub/blob/main/library.lua?raw=true'))
+end
+if CheckFunc(loadfile) then
+    library = loadfile('Azure Hub/library.lua')()
+else
+    library = loadstring(game:HttpGet('https://github.com/xataxell/azure-hub/blob/main/library.lua?raw=true'))()
+end
 local Automation = library:CreateWindow('Automation')
 local Modifications = library:CreateWindow('Modifications')
 local Teleports = library:CreateWindow('Teleports')
@@ -146,7 +157,7 @@ Visuals:Toggle('Free Fish Radar', {location = flags, flag = 'fishabundance'})
 -----
 Market:Section('Equipment')
 Market:Dropdown('Equipment', {location = flags, flag = 'equipmenttobuy', list = EquipmentNames})
-Market:Box('Amount', {type = 'number', default = 111, min = 1, max = 10000, location = flags, flag = 'equipmentamount'})
+Market:Box('Amount', {type = 'number', default = 1, min = 1, max = 10000, location = flags, flag = 'equipmentamount'})
 Market:Button('Purchase Item', function() purchase:FireServer(flags['equipmenttobuy'], 'item', nil, (flags['equipmentamount'] ~= '' and flags['equipmentamount'] or 1)) end)
 Market:Section('Money')
 Market:Toggle('Claim Money Reward', {location = flags, flag = 'receivemoney'})
