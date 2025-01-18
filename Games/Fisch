@@ -9,9 +9,9 @@ local flags = {}
 local characterposition
 local lp = Players.LocalPlayer
 local fishabundancevisible = false
-local dailyreward = ReplicatedStorage.packages.Net["RE/DailyReward/Claim"]
 local purchase = ReplicatedStorage.events.purchase
 local itemenv = require(ReplicatedStorage.modules.library.items)
+local fishenv = require(ReplicatedStorage.modules.library.fish)
 local deathcon
 local tooltipmessage
 local TeleportLocations = {
@@ -47,11 +47,15 @@ local TeleportLocations = {
 local PurchaseableItems = {
     ['Equipment'] = {
         ['Items'] = {}
+    },
+    ['Fish'] = {
+        ['Items'] = {}
     }
 }
 local ZoneNames = {}
 local RodNames = {}
 local EquipmentNames = {}
+local FishNames = {}
 local RodColors = {}
 local RodMaterials = {}
 for i,v in pairs(TeleportLocations['Zones']) do table.insert(ZoneNames, i) end
@@ -61,7 +65,13 @@ for i,v in pairs(itemenv['Items']) do
         PurchaseableItems['Equipment']['Items'][i] = {Price = v.Price}
     end
 end
+for i,v in pairs(fishenv) do
+    if typeof(v) == 'table' and (v.Price ~= 1/0 and v.Price ~= math.huge) and v.BuyMult then
+        PurchaseableItems['Fish']['Items'][i] = {Price = v.Price * v.BuyMult}
+    end
+end
 for i,v in pairs(PurchaseableItems['Equipment']['Items']) do table.insert(EquipmentNames, i) end
+for i,v in pairs(PurchaseableItems['Fish']['Items']) do table.insert(FishNames, i) end
 
 
 --// Functions
@@ -143,11 +153,18 @@ Visuals:Toggle('Rod Chams', {location = flags, flag = 'rodchams'})
 Visuals:Dropdown('Material', {location = flags, flag = 'rodmaterial', list = {'ForceField', 'Neon'}})
 Visuals:Section('Fish Abundance')
 Visuals:Toggle('Free Fish Radar', {location = flags, flag = 'fishabundance'})
+Visuals:Section('Fisch Watermark')
+Visuals:Toggle('Enabled', {location = flags, flag = 'watermarkenabled'})
+Visuals:Box('Text', {type = 'string', default = 'Azure Hub', location = flags, flag = 'watermarktext'})
 -----
 Market:Section('Equipment')
 Market:Dropdown('Equipment', {location = flags, flag = 'equipmenttobuy', list = EquipmentNames})
 Market:Box('Amount', {type = 'number', default = 1, min = 1, max = 10000, location = flags, flag = 'equipmentamount'})
 Market:Button('Purchase Item', function() purchase:FireServer(flags['equipmenttobuy'], 'item', nil, (flags['equipmentamount'] ~= '' and flags['equipmentamount'] or 1)) end)
+Market:Section('Fish')
+Market:Dropdown('Fish', {location = flags, flag = 'fishtobuy', list = FishNames})
+Market:Box('Amount', {type = 'number', default = 1, min = 1, max = 10000, location = flags, flag = 'fishamount'})
+Market:Button('Purchase Item', function() purchase:FireServer(flags['fishtobuy'], 'fish', nil, (flags['fishamount'] ~= '' and flags['fishamount'] or 1)) end)
 
 --// Loops
 RunService.Heartbeat:Connect(function()
@@ -195,6 +212,21 @@ RunService.Heartbeat:Connect(function()
     end
 
     -- Visuals
+    if flags['watermarkenabled'] then
+        if lp.PlayerGui and FindChild(lp.PlayerGui, 'Watermark') then
+            lp.PlayerGui.Watermark.Enabled = true
+            if FindChild(lp.PlayerGui.Watermark, 'TextLabel') then
+                lp.PlayerGui.Watermark.TextLabel.Text = flags['watermarktext']
+            end
+        end
+    elseif not flags['watermarkenabled'] then
+        if lp.PlayerGui and FindChild(lp.PlayerGui, 'Watermark') then
+            lp.PlayerGui.Watermark.Enabled = false
+            if FindChild(lp.PlayerGui.Watermark, 'TextLabel') then
+                lp.PlayerGui.Watermark.TextLabel.Text = ''
+            end
+        end
+    end
     if flags['rodchams'] then
         local rod = FindRod()
         if rod ~= nil and FindChild(rod, 'Details') then
