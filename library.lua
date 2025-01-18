@@ -271,6 +271,8 @@ do
 
             if type == 'number' then
                 location[flag] = default;
+	    elseif type == 'string' then
+                location[flag] = default;
             else
                 location[flag] = "";
                 default = "";
