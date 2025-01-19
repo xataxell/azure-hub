@@ -1,0 +1,110 @@
+--// Services
+local Players           = cloneref(game:GetService('Players'))
+local ReplicatedStorage = cloneref(game:GetService('ReplicatedStorage'))
+local RunService        = cloneref(game:GetService('RunService'))
+local GuiService        = cloneref(game:GetService('GuiService'))
+
+--// Variables
+local flags     = {}
+local lp        = Players.LocalPlayer
+local locations = {
+
+}
+
+--// Functions
+FindChildOfClass = function(parent, classname)
+    return parent:FindFirstChildOfClass(classname)
+end
+FindChild = function(parent, child)
+    return parent:FindFirstChild(child)
+end
+FindChildOfType = function(parent, childname, classname)
+    child = parent:FindFirstChild(childname)
+    if child and child.ClassName == classname then
+        return child
+    end
+end
+CheckFunc = function(func)
+    return typeof(func) == 'function'
+end
+
+--// Custom Functions
+getchar = function()
+    return lp.Character or lp.CharacterAdded:Wait()
+end
+gethrp = function()
+    return getchar():WaitForChild('HumanoidRootPart')
+end
+gethum = function()
+    return getchar():WaitForChild('Humanoid')
+end
+getbackpack = function()
+    return lp.Backpack
+end
+findtool = function(mode, manualtool)
+    local tool
+    if mode == 'Equipped' then
+        tool = FindChildOfClass(getchar(), 'Tool')
+    elseif mode == 'Manual Select' then
+        if FindChild(getbackpack(), manualtool) then
+            tool = getbackpack()[manualtool]
+            tool.Parent = getchar()
+        elseif FindChildOfType(getchar(), manualtool, 'Tool') then
+            tool = FindChildOfType(getchar(), manualtool, 'Tool')
+        end
+    end
+    return tool
+end
+getsnow = function()
+    for i,v in next, workspace.Regions.Winterville.Tiles:GetChildren() do
+        if v.Color == Color3.new(1,1,1) and v.Position.Y >= 8 then
+            return v
+        end
+    end
+end
+getarguments = function(tool)
+    if tool == 'Plastic Shovel' then
+        return {[1] = getsnow()}
+    elseif tool == 'Small Push Shovel' then
+        return {[1] = getsnow()}
+    elseif tool == 'Metal Shovel' then
+        return {[1] = getsnow(), [2] = getsnow()}
+    elseif tool == 'Large Push Shovel' then
+        return {[1] = getsnow(), [2] = getsnow()}
+    elseif tool == 'Thermal Pad' then
+        return {[1] = getsnow(), [2] = getsnow(), [3] = getsnow()}
+    elseif tool == 'Push Blower' then
+        return {[1] = getsnow(), [2] = getsnow(), [3] = getsnow()}
+    elseif tool == 'Flame Thrower' then
+        return {[1] = getsnow(), [2] = getsnow(), [3] = getsnow(), [4] = getsnow()}
+    elseif tool == 'Vacuum' then
+        return {[1] = getsnow(), [2] = getsnow(), [3] = getsnow(), [4] = getsnow()}
+    elseif tool == 'Snow Blower' then
+        return {[1] = getsnow(), [2] = getsnow(), [3] = getsnow(), [4] = getsnow(), [5] = getsnow()}
+    end
+end
+
+--// UI
+local library = loadstring(game:HttpGet('https://github.com/xataxell/azure-hub/blob/main/library.lua?raw=true'))()
+local Automation = library:CreateWindow('Automation')
+Automation:Section('Autofarm')
+Automation:Toggle('Auto Snow', {location = flags, flag = 'autosnow'})
+Automation:Dropdown('Tool Detection Mode', {location = flags, flag = 'tooldetectmode', list = {'Equipped', 'Manual Select'}})
+Automation:Dropdown('Tool', {location = flags, flag = 'selectedtool', list = {'Plastic Shovel', 'Small Push Shovel', 'Metal Shovel', 'Large Push Shovel', 'Thermal Pad', 'Push Blower', 'Flame Thrower', 'Vacuum', 'Snow Blower'}})
+Automation:Toggle('Auto Sell', {location = flags, flag = 'autosell'})
+
+--// Loops
+RunService.Heartbeat:Connect(function()
+    if flags['autosnow'] then
+        local equippedtool = findtool(flags['tooldetectmode'], flags['selectedtool'])
+        if equippedtool then
+            ReplicatedStorage.Modules.Network.RemoteEvent:FireServer('Shovel', equippedtool, getarguments(equippedtool.Name))
+        end
+    end
+
+    if flags['autosell'] and lp:GetAttribute('Storage') == lp:GetAttribute('MaxStorage') then
+        gethrp().CFrame = CFrame.new(497.871368, 15.747962, -73.9140854, 0.00942997914, 8.11732725e-09, -0.999955535, 1.31579085e-08, 1, 8.2417726e-09, 0.999955535, -1.32350433e-08, 0.00942997914)
+        task.wait(.1)
+        ReplicatedStorage.Modules.Network.RemoteEvent:FireServer('SellSnow', 'Frosty')
+    end
+end)
