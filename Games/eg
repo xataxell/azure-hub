@@ -1,0 +1,62 @@
+--// Services
+local Players           = cloneref(game:GetService('Players'))
+local ReplicatedStorage = cloneref(game:GetService('ReplicatedStorage'))
+local RunService        = cloneref(game:GetService('RunService'))
+local GuiService        = cloneref(game:GetService('GuiService'))
+
+--// Variables
+local flags     = {}
+local lp        = Players.LocalPlayer
+
+--// Functions
+FindChildOfClass = function(parent, classname)
+    return parent:FindFirstChildOfClass(classname)
+end
+FindChild = function(parent, child)
+    return parent:FindFirstChild(child)
+end
+FindChildOfType = function(parent, childname, classname)
+    child = parent:FindFirstChild(childname)
+    if child and child.ClassName == classname then
+        return child
+    end
+end
+CheckFunc = function(func)
+    return typeof(func) == 'function'
+end
+
+--// Custom Functions
+getchar = function()
+    return lp.Character or lp.CharacterAdded:Wait()
+end
+gethrp = function()
+    return getchar():WaitForChild('HumanoidRootPart')
+end
+gethum = function()
+    return getchar():WaitForChild('Humanoid')
+end
+
+--// UI
+local library = loadstring(game:HttpGet('https://github.com/xataxell/azure-hub/blob/main/library.lua?raw=true'))()
+local Automation = library:CreateWindow('Automation')
+Automation:Section('Items')
+Automation:Button('Collect all accessories', function()
+    for i,v in pairs(workspace.assetSpawns:GetChildren()) do
+        game:GetService("ReplicatedStorage").remotes.events["fromClient-assetCollected"]:FireServer(v)
+    end
+end)
+Automation:Button('Collect all eggs', function()
+    for i,v in pairs(workspace.currencySpawns.eggs:GetChildren()) do
+        if v:IsA('Part') then
+            game:GetService("ReplicatedStorage").remotes.events["fromClient-currencyCollected"]:FireServer(v)
+        end
+    end
+end)
+Automation:Button('Receive coins', function()
+    for i,v in pairs(workspace.currencySpawns.coins:GetDescendants()) do
+        if v:IsA('Part') then
+            game:GetService("ReplicatedStorage").remotes.events["fromClient-currencyCollected"]:FireServer(v)
+        end
+        task.wait(.0001)
+    end
+end)
