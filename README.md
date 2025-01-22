@@ -7,7 +7,7 @@ loadstring(game:HttpGet('https://github.com/xataxell/azure-hub/blob/main/loader.
 - Feature Packed = Tons of features, most of them are useful or really useful
 - Very minimal = Next to no features
 - Decent enough = Not many features but still good
-- All you would need = Not as much features as feature packed, but has almost everything you would want and need
+- All you would need = Not as many features as feature packed, but has almost everything you would want and need
 ## Supported Games
 - [Fisch](https://www.roblox.com/games/16732694052/Fisch) (Feature Packed)
 - [Shrimp Game](https://www.roblox.com/games/7606564092/MINGLE-Shrimp-Game) (Very minimal)
