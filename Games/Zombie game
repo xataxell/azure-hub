@@ -1,0 +1,133 @@
+--// Services
+local Players           = cloneref(game:GetService('Players'))
+local ReplicatedStorage = cloneref(game:GetService('ReplicatedStorage'))
+local RunService        = cloneref(game:GetService('RunService'))
+local GuiService        = cloneref(game:GetService('GuiService'))
+
+--// Variables
+local flags         = {}
+local lp            = Players.LocalPlayer
+local AttackRemote  = ReplicatedStorage.Remotes.ZombieRelated.PlayerAttack
+local NetworkRemote = ReplicatedStorage.NetworkEvents.RemoteEvent
+local auracon       = nil
+local medkit        = workspace.Scripted.Medkits:GetChildren()[2]
+local prox          = medkit.Handle.ProximityPrompt
+local attackrange   = nil
+
+--// Functions
+FindChildOfClass = function(parent, classname)
+    return parent:FindFirstChildOfClass(classname)
+end
+FindChild = function(parent, child)
+    return parent:FindFirstChild(child)
+end
+FindChildOfType = function(parent, childname, classname)
+    child = parent:FindFirstChild(childname)
+    if child and child.ClassName == classname then
+        return child
+    end
+end
+CheckFunc = function(func)
+    return typeof(func) == 'function'
+end
+
+--// Custom Functions
+getchar = function()
+    return lp.Character or lp.CharacterAdded:Wait()
+end
+gethrp = function()
+    return getchar():WaitForChild('HumanoidRootPart')
+end
+gethum = function()
+    return getchar():WaitForChild('Humanoid')
+end
+initiateinfattackaura = function()
+    if attackrange then
+        attackrange:Destroy()
+        attackrange = nil
+    end
+    if auracon then auracon:Disconnect() end
+    repeat
+        task.wait()
+    until
+        (lp and lp.Character and lp.Character:FindFirstChild('HumanoidRootPart') and lp.Character:FindFirstChild('Torso'))
+    auracon = RunService.Heartbeat:Connect(function()
+        if not flags['infattackaura'] then return end
+        if flags['visualizeattackrange'] then
+            if not attackrange then
+                attackrange = Instance.new('Part')
+                attackrange.Parent = workspace
+                attackrange.Anchored = true
+                attackrange.CanCollide = false
+                attackrange.Shape = Enum.PartType.Ball
+                attackrange.Color = Color3.fromRGB(255, 0, 0)
+                attackrange.Size = Vector3.new(20, 20, 20)
+                attackrange.Material = Enum.Material.ForceField
+            end
+            if attackrange then
+                attackrange.Position = lp.Character.HumanoidRootPart.Position
+            end
+        else
+            if attackrange then
+                attackrange:Destroy()
+                attackrange = nil
+            end
+        end
+        for i,v in pairs(Players:GetPlayers()) do
+            if v ~= lp and (v.Character and v.Character:FindFirstChild('Torso')) and (v.Character.Torso.Position - lp.Character.Torso.Position).Magnitude <= 10 then
+                AttackRemote:InvokeServer(v.Character.Torso)
+            end
+        end
+    end)
+end
+
+--// UI
+local library = loadstring(game:HttpGet('https://github.com/xataxell/azure-hub/blob/main/library.lua?raw=true'))()
+local Combat = library:CreateWindow('Combat')
+local Self = library:CreateWindow('Self')
+local Abusable = library:CreateWindow('Abusable')
+Combat:Section('Automated')
+Combat:Toggle('Infected Attack Aura', {location = flags, flag = 'infattackaura'}, function()
+    initiateinfattackaura()
+    lp.CharacterAdded:Connect(initiateinfattackaura)
+end)
+Combat:Toggle('Visualize Aura Range', {location = flags, flag = 'visualizeattackrange'})
+-----
+Self:Section('Local Modifiers')
+Self:Button('Heal Self', function()
+    if lp.Character and lp.Character:FindFirstChild('HumanoidRootPart') then
+        oldpos = lp.Character.HumanoidRootPart.CFrame
+        lp.Character.HumanoidRootPart.CFrame = CFrame.new(-96.2869949, 25.8119812, 49.2507782, -1, 0, 0, 0, 1, 0, 0, 0, -1)
+        task.wait(.15)
+        fireproximityprompt(prox)
+        task.wait(.15)
+        lp.Character.HumanoidRootPart.CFrame = oldpos
+    end
+end)
+Self:Button('Heal Self To Max Health', function()
+    if lp.Character and lp.Character:FindFirstChild('HumanoidRootPart') then
+        oldpos = lp.Character.HumanoidRootPart.CFrame
+        lp.Character.HumanoidRootPart.CFrame = CFrame.new(-96.2869949, 25.8119812, 49.2507782, -1, 0, 0, 0, 1, 0, 0, 0, -1)
+        task.wait(.15)
+        for i = 1, 50 do
+            fireproximityprompt(prox)
+        end
+        task.wait(.15)
+        lp.Character.HumanoidRootPart.CFrame = oldpos
+    end
+end)
+Self:Button('Infect Self', function()
+    if lp.Character and lp.Character:FindFirstChild('Torso') then
+        for i = 1, 10 do
+            AttackRemote:InvokeServer(lp.Character.Torso)
+        end
+    end
+end)
+-----
+Abusable:Section('Remote')
+Abusable:Button('Spawn Landmine', function()
+    for i = 1, flags['landmineamount'] do
+        NetworkRemote:FireServer('PLACE_LANDMINE')
+    end
+end)
+Abusable:Box('Amount', {type = 'number', default = 1, min = 1, max = 100, location = flags, flag = 'landmineamount'})
