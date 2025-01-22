@@ -7,7 +7,8 @@ local games = {
     [originalid]  = 'https://github.com/xataxell/azure-hub/blob/main/Games/Shrimp%20Game?raw=true',
     [117701570624742] = 'https://github.com/xataxell/azure-hub/blob/main/Games/B%26B?raw=true',
     [1252559098] = 'https://github.com/xataxell/azure-hub/blob/main/Games/Snow%20Shoveling%20Simulator?raw=true',
-    [2747834912] = 'https://github.com/xataxell/azure-hub/blob/main/Games/egr?raw=true'
+    [2747834912] = 'https://github.com/xataxell/azure-hub/blob/main/Games/egr?raw=true',
+    [14419907512] = 'https://github.com/xataxell/azure-hub/blob/main/Games/Zombie%20game?raw=true'
 }
 
 if games[id] then
