@@ -142,10 +142,12 @@ local Visuals = library:CreateWindow('Visuals')
 local Market = library:CreateWindow('Market')
 Automation:Section('Autofarm')
 Automation:Toggle('Freeze Character', {location = flags, flag = 'freezechar'})
-Automation:Dropdown('Freeze Character Mode', {location = flags, flag = 'freezecharmode', list = {'Rod Equipped', 'Toggled'}})
 Automation:Toggle('Auto Cast', {location = flags, flag = 'autocast'})
 Automation:Toggle('Auto Shake', {location = flags, flag = 'autoshake'})
 Automation:Toggle('Auto Reel', {location = flags, flag = 'autoreel'})
+Automation:Section('Autofarm Settings')
+Automation:Dropdown('Freeze Character Mode', {location = flags, flag = 'freezecharmode', list = {'Rod Equipped', 'Toggled'}})
+Automation:Dropdown('Auto Reel Mode', {location = flags, flag = 'autoreelmode', list = {'Limited Blatant', 'Legit'}})
 -----
 if CheckFunc(hookmetamethod) then
     Modifications:Section('Hooks')
@@ -184,7 +186,6 @@ Market:Button('Purchase Item', function() purchase:FireServer(flags['fishtobuy']
 Market:Section('Money')
 Market:Box('Amount', {type = 'number', default = 1, min = 1, max = 1/0, location = flags, flag = 'moneyamount'})
 Market:Button('Get Money', function() purchase:FireServer('Sleigh', 'Boat', nil, flags['moneyamount']) end)
-
 
 --// Loops
 RunService.Heartbeat:Connect(function()
@@ -225,9 +226,13 @@ RunService.Heartbeat:Connect(function()
         end
     end
     if flags['autoreel'] then
-        local rod = FindRod()
-        if rod ~= nil and rod['values']['lure'].Value == 100 and task.wait(.5) then
-            ReplicatedStorage.events.reelfinished:FireServer(100, true)
+        if flags['autoreelmode'] == 'Limited Blatant' then
+            local rod = FindRod()
+            if rod ~= nil and rod['values']['lure'].Value == 100 and task.wait(math.random(10, 20)/10) then
+                task.delay(math.random(10, 25)/10, function()
+                    ReplicatedStorage.events.reelfinished:FireServer(100, (math.random(1,2) == 1 and true or false))
+                end)
+            end
         end
     end
 
