@@ -4,14 +4,21 @@ local ReplicatedStorage = cloneref(game:GetService('ReplicatedStorage'))
 local RunService = cloneref(game:GetService('RunService'))
 local GuiService = cloneref(game:GetService('GuiService'))
 
+--// Executor identification
+local executor, version = (identifyexecutor and identifyexecutor())
+
 --// Variables
 local flags = {}
 local characterposition
 local lp = Players.LocalPlayer
 local fishabundancevisible = false
 local purchase = ReplicatedStorage.events.purchase
-local itemenv = require(ReplicatedStorage.modules.library.items)
-local fishenv = require(ReplicatedStorage.modules.library.fish)
+local itemenv = {'Aurora Totem', 'Tempest Totem', 'Avalanche Totem', 'Smokescreen Totem', 'Sundial Totem', 'Blizzard Totem', 'Windset Totem', 'Eclipse Totem', 'Meteor Totem', 'Flippers', 'Super Flippers'}
+local fishenv = {'Quality Bait Crate', 'Bait Crate'}
+if executor ~= 'Xeno' then
+    local itemenv = require(ReplicatedStorage.modules.library.items)
+    local fishenv = require(ReplicatedStorage.modules.library.fish)
+end
 local deathcon
 local tooltipmessage
 local TeleportLocations = {
@@ -60,14 +67,23 @@ local RodColors = {}
 local RodMaterials = {}
 for i,v in pairs(TeleportLocations['Zones']) do table.insert(ZoneNames, i) end
 for i,v in pairs(TeleportLocations['Rods']) do table.insert(RodNames, i) end
-for i,v in pairs(itemenv['Items']) do
-    if typeof(v) == 'table' and (v.Price ~= 1/0 and v.Price ~= math.huge) and (not v.DEV or v.DEV ~= true) and (not v.Unpurchasable or v.Unpurchasable ~= true) then
-        PurchaseableItems['Equipment']['Items'][i] = {Price = v.Price}
+if executor ~= 'Xeno' then
+    for i,v in pairs(itemenv['Items']) do
+        if typeof(v) == 'table' and (v.Price ~= 1/0 and v.Price ~= math.huge) and (not v.DEV or v.DEV ~= true) and (not v.Unpurchasable or v.Unpurchasable ~= true) then
+            PurchaseableItems['Equipment']['Items'][i] = {Price = v.Price}
+        end
     end
-end
-for i,v in pairs(fishenv) do
-    if typeof(v) == 'table' and (v.Price ~= 1/0 and v.Price ~= math.huge) and v.BuyMult then
-        PurchaseableItems['Fish']['Items'][i] = {Price = v.Price * v.BuyMult}
+    for i,v in pairs(fishenv) do
+        if typeof(v) == 'table' and (v.Price ~= 1/0 and v.Price ~= math.huge) and v.BuyMult then
+            PurchaseableItems['Fish']['Items'][i] = {Price = v.Price * v.BuyMult}
+        end
+    end
+else
+    for i,v in pairs(itemenv) do
+        table.insert(EquipmentNames, v)
+    end
+    for i,v in pairs(fishenv) do
+        table.insert(FishNames, v)
     end
 end
 for i,v in pairs(PurchaseableItems['Equipment']['Items']) do table.insert(EquipmentNames, i) end
@@ -165,6 +181,10 @@ Market:Section('Fish')
 Market:Dropdown('Fish', {location = flags, flag = 'fishtobuy', list = FishNames})
 Market:Box('Amount', {type = 'number', default = 1, min = 1, max = 10000, location = flags, flag = 'fishamount'})
 Market:Button('Purchase Item', function() purchase:FireServer(flags['fishtobuy'], 'fish', nil, (flags['fishamount'] ~= '' and flags['fishamount'] or 1)) end)
+Market:Section('Money')
+Market:Box('Amount', {type = 'number', default = 1, min = 1, max = 1/0, location = flags, flag = 'moneyamount'})
+Market:Button('Get Money', function() purchase:FireServer('Sleigh', 'Boat', nil, flags['moneyamount']) end)
+
 
 --// Loops
 RunService.Heartbeat:Connect(function()
