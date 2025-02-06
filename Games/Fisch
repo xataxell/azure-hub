@@ -13,12 +13,8 @@ local characterposition
 local lp = Players.LocalPlayer
 local fishabundancevisible = false
 local purchase = ReplicatedStorage.events.purchase
-local itemenv = {'Aurora Totem', 'Tempest Totem', 'Avalanche Totem', 'Smokescreen Totem', 'Sundial Totem', 'Blizzard Totem', 'Windset Totem', 'Eclipse Totem', 'Meteor Totem', 'Flippers', 'Super Flippers'}
-local fishenv = {'Quality Bait Crate', 'Bait Crate'}
-if executor ~= 'Xeno' then
-    local itemenv = require(ReplicatedStorage.modules.library.items)
-    local fishenv = require(ReplicatedStorage.modules.library.fish)
-end
+local itemenv = require(ReplicatedStorage.modules.library.items)
+local fishenv = require(ReplicatedStorage.modules.library.fish)
 local deathcon
 local tooltipmessage
 local TeleportLocations = {
@@ -183,9 +179,6 @@ Market:Section('Fish')
 Market:Dropdown('Fish', {location = flags, flag = 'fishtobuy', list = FishNames})
 Market:Box('Amount', {type = 'number', default = 1, min = 1, max = 10000, location = flags, flag = 'fishamount'})
 Market:Button('Purchase Item', function() purchase:FireServer(flags['fishtobuy'], 'fish', nil, (flags['fishamount'] ~= '' and flags['fishamount'] or 1)) end)
-Market:Section('Money')
-Market:Box('Amount', {type = 'number', default = 1, min = 1, max = 1/0, location = flags, flag = 'moneyamount'})
-Market:Button('Get Money', function() purchase:FireServer('Sleigh', 'Boat', nil, flags['moneyamount']) end)
 
 --// Loops
 RunService.Heartbeat:Connect(function()
